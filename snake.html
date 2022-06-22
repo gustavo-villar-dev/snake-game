@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+    <head> 
+        <title>Snake Game - Gustavo Villar</title>
+
+        <style>
+            body {
+                background-color: #1a1919;
+            }
+
+            h2 {
+                color: antiquewhite; 
+                font-family: 'Courier New', Courier, monospace;
+            }
+
+            h3 {
+                color: antiquewhite; 
+                font-family: Arial, Helvetica, sans-serif; 
+                font-size: 3rem;
+            }
+            
+            canvas {
+                display: flex; 
+                top: 0; 
+                bottom: 0; 
+                left: 0; 
+                right: 0; 
+                margin-bottom: auto;
+                margin-left: auto;
+                margin-right: auto;
+                margin-top: -30px;
+            }
+
+            .scoresTexts {
+                width: 625px;
+                display: flex;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                margin-top: 6rem;
+                margin-bottom: 0;
+                margin-left: auto;
+                margin-right: auto;
+                justify-content: space-between;
+            }
+
+            .scores{
+                width: 625px;
+                display: flex;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                margin-bottom: 0px;
+                margin-left: auto;
+                margin-right: auto;
+                margin-top: -60px;
+                justify-content: space-between;
+            }
+
+        </style>
+    </head>
+
+    <body>
+
+        <div class = "scoresTexts">
+            <h2 id = "scoreText">Score</h2>
+            <h2 id = "highscoreText">Highscore</h2>
+        </div>
+
+        <div class = "scores">
+            <h3 id = "score">zero</h3>
+            <h3 id = "highscore">zero</h3>
+        </div>
+        
+        <canvas id = "stage" width="625" height="625"> Your browser doesn't support canvas. </canvas>
+        <script type="text/javascript">
+
+            window.onload = function(){
+                
+                //gets canvas by isd = "stage"
+                var stage = document.getElementById('stage'); 
+                var context = stage.getContext("2d");
+                var scoreText = document.getElementById('score');
+                var highscoreText = document.getElementById('highscore');
+
+                //when key is pressed down, execs keypush function
+                document.addEventListener("keydown",keyPush);
+
+                //framerate ---------------------------------------------------
+                setInterval(game, 50);
+
+                //consts ------------------------------------------------------
+                const vel = 1;
+
+                //variables ---------------------------------------------------
+
+                //speed
+                var speedX = speedY = 0;
+                
+                //head's position
+                var posX = posY = 10; 
+                
+                //tile size and number of tiles 
+                var tileSize = 25, tiles = 25;
+
+                //apple's position
+                var appleX = appleY = 15;
+
+                //the body of the snake (not head)
+                var trail = [];
+
+                //starting size of snake
+                tail = 5;
+
+                //stores last key pressed
+                var lastKey;
+                
+                //score and highscore
+                var score, highscore = 0;
+
+                //game function -----------------------------------------------
+                function game(){
+
+                    //updating pos accordingly to speed
+                    posX += speedX;
+                    posY += speedY;
+                    
+                    //moves snake from one side of the screen to the other
+                    if (posX < 0){
+                        posX = tiles - 1;
+                    }
+                    
+                    if (posX > tiles - 1){
+                        posX = 0;
+                    }
+
+                    if (posY < 0){
+                        posY = tiles - 1;
+                    }
+
+                    if(posY > tiles - 1){
+                        posY = 0;
+                    }
+                    
+                    //define background collor
+                    context.fillStyle = "#212020"; 
+                    context.fillRect(0,0, stage.width, stage.height); 
+
+                    //define apple visually
+                    context.fillStyle = "red"; 
+                    context.fillRect(appleX * tileSize, appleY * tileSize, tileSize, tileSize); 
+                    
+                    //define snake's collor
+                    context.fillStyle = "green"; 
+                    for(var i = 0; i < trail.length; i++){
+                        //paints snake's tail
+                        context.fillRect(trail[i].x * tileSize, trail[i].y * tileSize, tileSize, tileSize);
+                        
+                        //verify if snake died (head-tail colission)
+                        if(trail[i].x == posX && trail[i].y == posY){
+                            speedX = speedY = 0;
+                            tail = 5;
+                            score = 0;
+                        }
+                    }
+
+                    //shows score
+                    highscoreText.textContent = highscore;
+                    scoreText.textContent = score;
+
+                    //makes pos array's last element
+                    trail.push({x:posX, y:posY})
+
+                    //removes last array element (last pos)
+                    while(trail.length > tail){
+                        trail.shift();
+                    }
+
+                    //checks if apple was eaten, grow tail and gen new apple
+                    if(posX == appleX && posY == appleY){
+
+                        //adds 1 to score
+                        score++;
+                        if(score>highscore) highscore = score;
+
+                        //grows tail
+                        tail++;
+                        
+                        //creates new apple coordinates
+                        appleX = Math.floor(Math.random()*tiles);
+                        appleY = Math.floor(Math.random()*tiles);
+                    }
+                
+                }
+
+                //movement -------------------------------------------------------------
+                function keyPush(event){
+    
+                    //verifys wich key was pressed
+                    switch(event.keyCode){
+
+                        //left arrow
+                        case 37:
+                            if(lastKey != "right"){ 
+                                speedX = -vel;
+                                speedY = 0;
+                                lastKey = "left";
+                            }
+                            break;
+
+                        //up arrow
+                        case 38:
+                            if(lastKey != "down"){
+                                speedX = 0;
+                                speedY = -vel;
+                                lastKey = "up";
+                            }
+                            break;
+                        
+                        //right arrow
+                        case 39:
+                            if(lastKey != "left"){
+                                speedX = vel;
+                                speedY = 0;
+                                lastKey = "right";
+                            }
+                            break;
+
+                        //down arrow
+                        case 40:
+                            if(lastKey != "up"){
+                                speedX = 0;
+                                speedY = vel;
+                                lastKey = "down";
+                            }
+                            break;
+                    }
+
+
+
+                }
+
+
+
+            }
+
+        </script>
+
+    </body>
+
+</html>
